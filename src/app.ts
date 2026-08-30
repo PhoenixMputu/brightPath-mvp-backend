@@ -4,14 +4,28 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { logger } from './config/logger';
+import { limiter } from './config/rateLimit';
 import routes from './routes';
 
 const app: Application = express();
 
-app.use(helmet());
+const isDev = process.env.NODE_ENV === 'development';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "script-src": ["'self'", ...(isDev ? ["'unsafe-inline'"] : [])],
+      "style-src": ["'self'", "https:", ...(isDev ? ["'unsafe-inline'"] : [])],
+      "img-src": ["'self'", "data:", "https:"],
+      "upgrade-insecure-requests": [],
+    },
+  },
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'development' ? '*' : process.env.ALLOWED_ORIGINS?.split(',') || false,
 }));
+app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
