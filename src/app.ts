@@ -9,7 +9,9 @@ import routes from './routes';
 const app: Application = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'development' ? '*' : process.env.ALLOWED_ORIGINS?.split(',') || false,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
