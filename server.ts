@@ -23,6 +23,10 @@ if (cluster.isPrimary) {
 } else {
   const startServer = async () => {
     try {
+      // Stagger worker startup to avoid thundering herd on DB/Redis
+      const delay = Math.floor(Math.random() * 2000);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
       await prisma.$connect();
       logger.info(`[Worker ${process.pid}] Database connection established.`);
 
