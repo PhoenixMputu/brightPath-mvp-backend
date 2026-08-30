@@ -18,7 +18,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 

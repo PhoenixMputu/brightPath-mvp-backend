@@ -21,26 +21,42 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 } else {
-  const server = app.listen(PORT, () => {
-    logger.info(`[Worker ${process.pid}] Server started on port ${PORT}`);
-  });
+  const startServer = async () => {
+    try {
+      await prisma.$connect();
+      logger.info(`[Worker ${process.pid}] Database connection established.`);
 
-  const gracefulShutdown = async (signal: string) => {
-    logger.info(`[Worker ${process.pid}] Signal ${signal} received. Closing connections...`);
+      await redisClient.set('__healthcheck__', 'ok');
+      await redisClient.del('__healthcheck__');
+      logger.info(`[Worker ${process.pid}] Redis connection established.`);
 
-    server.close(async () => {
-      try {
-        await prisma.$disconnect();
-        redisClient.close();
-        logger.info(`[Worker ${process.pid}] Postgres and Redis connections closed.`);
-        process.exit(0);
-      } catch (error) {
-        logger.error(`[Worker ${process.pid}] Error during shutdown:`, error);
-        process.exit(1);
-      }
-    });
+      const server = app.listen(PORT, () => {
+        logger.info(`[Worker ${process.pid}] Server started on port ${PORT}`);
+      });
+
+      const gracefulShutdown = async (signal: string) => {
+        logger.info(`[Worker ${process.pid}] Signal ${signal} received. Closing connections...`);
+
+        server.close(async () => {
+          try {
+            await prisma.$disconnect();
+            await redisClient.quit();
+            logger.info(`[Worker ${process.pid}] Postgres and Redis connections closed.`);
+            process.exit(0);
+          } catch (error) {
+            logger.error(`[Worker ${process.pid}] Error during shutdown:`, error);
+            process.exit(1);
+          }
+        });
+      };
+
+      process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+      process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    } catch (error) {
+      logger.error(`[Worker ${process.pid}] Failed to start worker:`, error);
+      process.exit(1);
+    }
   };
 
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  startServer();
 }

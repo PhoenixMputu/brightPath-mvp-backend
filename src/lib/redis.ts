@@ -1,9 +1,9 @@
-import { RedisClient } from 'bun';
+import Redis from 'ioredis';
 
-export const redisClient = new RedisClient(process.env.REDIS_URL || 'redis://localhost:6379');
+export const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 /**
- * Generic caching helper with TTL using Bun.redis
+ * Generic caching helper with TTL using ioredis
  */
 export async function cacheOrFetch<T>(
   key: string,
