@@ -1,6 +1,7 @@
 import express, { type Application, type Request, type Response, type NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { logger } from './config/logger';
@@ -26,6 +27,7 @@ app.use(cors({
   origin: process.env.NODE_ENV === 'development' ? '*' : process.env.ALLOWED_ORIGINS?.split(',') || false,
 }));
 app.use(limiter);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -38,7 +40,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
-app.use('/api/v1', routes);
+app.use('/api', routes);
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const statusCode = err.statusCode || 500;

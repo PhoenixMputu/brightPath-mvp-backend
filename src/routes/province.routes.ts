@@ -16,20 +16,29 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - name
- *             properties:
- *               name:
- *                 type: string
- *                 description: The name of the province
+ *             $ref: '#/components/schemas/CreateProvinceInput'
  *     responses:
  *       201:
  *         description: Province created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Province'
  *       400:
  *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       409:
  *         description: Province already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/', validate(createProvinceSchema), provinceController.create);
 
@@ -42,6 +51,15 @@ router.post('/', validate(createProvinceSchema), provinceController.create);
  *     responses:
  *       200:
  *         description: List of provinces
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Province'
  */
 router.get('/', provinceController.list);
 

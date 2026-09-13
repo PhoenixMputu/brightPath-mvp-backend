@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import provinceRoutes from './province.routes';
+import schoolRoutes from './school.routes';
+import authRoutes from './auth.routes';
 import { prisma } from '../lib/prisma';
 import { redisClient } from '../lib/redis';
 
@@ -68,5 +70,11 @@ router.get('/health', async (_req, res) => {
 
 // Province routes
 router.use('/provinces', provinceRoutes);
+
+// School routes
+router.use('/schools', schoolRoutes);
+
+// Auth routes
+router.use('/auth', authRoutes);
 
 export default router;
