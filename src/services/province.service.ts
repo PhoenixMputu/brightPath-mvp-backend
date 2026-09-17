@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import type { CreateProvinceInput } from '../types/province';
+import type { CreateProvinceInput, ProvinceQuery } from '../types/province';
 
 export class ProvinceService {
   /**
@@ -25,13 +25,42 @@ export class ProvinceService {
   }
 
   /**
-   * Get all provinces
-   * @returns List of provinces
+   * Get all provinces with filtering, pagination and sorting
+   * @param query Query parameters
+   * @returns List of provinces and metadata
    */
-  async getAllProvinces() {
-    return await prisma.province.findMany({
-      orderBy: { name: 'asc' },
-    });
+  async getAllProvinces(query: ProvinceQuery = {}) {
+    const { search, page = 1, limit = 10, sortBy = 'name', sortOrder = 'asc' } = query;
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          name: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
+        }
+      : {};
+
+    const [provinces, total] = await Promise.all([
+      prisma.province.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      prisma.province.count({ where }),
+    ]);
+
+    return {
+      data: provinces,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }
 

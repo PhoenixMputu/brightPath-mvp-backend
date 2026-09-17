@@ -100,7 +100,7 @@ export class AuthService {
    */
   generateAccessToken(payload: { id: string; email: string }) {
     return jwt.sign(payload, process.env.JWT_ACCESS_SECRET!, {
-      expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m',
+      expiresIn: (process.env.JWT_ACCESS_EXPIRY || '15m') as any,
     });
   }
 
@@ -109,7 +109,7 @@ export class AuthService {
    */
   generateRefreshToken(payload: { id: string; email: string }) {
     return jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, {
-      expiresIn: process.env.JWT_REFRESH_EXPIRY || '7d',
+      expiresIn: (process.env.JWT_REFRESH_EXPIRY || '7d') as any,
     });
   }
 

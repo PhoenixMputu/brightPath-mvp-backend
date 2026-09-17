@@ -15,7 +15,7 @@ describe("AuthController verifyOtp", () => {
       status: "confirmed",
     };
     
-    const verifyOtpSpy = spyOn(authService, "verifyOtp").mockImplementation(async () => {
+    const verifyOtpSpy = spyOn(authService, "verifyOtp").mockImplementation(async (data) => {
       return {
         school: mockSchool as any,
         accessToken: "mock-access-token",
@@ -35,11 +35,11 @@ describe("AuthController verifyOtp", () => {
     expect(response.body.data.email).toBe("test@example.com");
 
     // Check cookies
-    const cookies = response.headers["set-cookie"];
+    const cookies = response.headers["set-cookie"] as string[] | undefined;
     expect(cookies).toBeDefined();
     
-    const accessTokenCookie = cookies.find((c: string) => c.startsWith("access_token="));
-    const refreshTokenCookie = cookies.find((c: string) => c.startsWith("refresh_token="));
+    const accessTokenCookie = cookies!.find((c: string) => c.startsWith("access_token="));
+    const refreshTokenCookie = cookies!.find((c: string) => c.startsWith("refresh_token="));
 
     expect(accessTokenCookie).toContain("access_token=mock-access-token");
     expect(accessTokenCookie).toContain("HttpOnly");
@@ -89,7 +89,7 @@ describe("AuthController verifyOtp", () => {
 
 describe("Silent Refresh strategy", () => {
   it("should refresh tokens successfully with a valid refresh_token cookie", async () => {
-    const refreshTokensSpy = spyOn(authService, "refreshTokens").mockImplementation(async () => {
+    const refreshTokensSpy = spyOn(authService, "refreshTokens").mockImplementation(async (token) => {
       return {
         accessToken: "new-access-token",
         refreshToken: "new-refresh-token",
@@ -103,10 +103,10 @@ describe("Silent Refresh strategy", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Tokens refreshed successfully");
 
-    const cookies = response.headers["set-cookie"];
+    const cookies = response.headers["set-cookie"] as string[] | undefined;
     expect(cookies).toBeDefined();
-    expect(cookies.find((c: string) => c.startsWith("access_token=new-access-token"))).toBeDefined();
-    expect(cookies.find((c: string) => c.startsWith("refresh_token=new-refresh-token"))).toBeDefined();
+    expect(cookies!.find((c: string) => c.startsWith("access_token=new-access-token"))).toBeDefined();
+    expect(cookies!.find((c: string) => c.startsWith("refresh_token=new-refresh-token"))).toBeDefined();
 
     refreshTokensSpy.mockRestore();
   });
@@ -187,7 +187,9 @@ describe("Auth signup with password", () => {
     const redisSetSpy = spyOn(redisClient, "set").mockImplementation(async () => "OK");
 
     // Mock emailService.sendOtpEmail
-    const sendEmailSpy = spyOn(emailService, "sendOtpEmail").mockImplementation(async () => {});
+    const sendEmailSpy = spyOn(emailService, "sendOtpEmail").mockImplementation(async (to, otp) => {
+      return { id: "mock-id" };
+    });
 
     const response = await request(app)
       .post("/api/auth/signup")
@@ -198,7 +200,9 @@ describe("Auth signup with password", () => {
     expect(response.body.data.email).toBe("new-school@example.com");
 
     // Verify password was hashed
-    const calledData = createSchoolSpy.mock.calls[0][0];
+    const firstCall = createSchoolSpy.mock.calls[0];
+    expect(firstCall).toBeDefined();
+    const calledData = firstCall![0];
     expect(calledData.password).not.toBe("securePassword123");
     expect(calledData.password).toMatch(/^\$/);
 
