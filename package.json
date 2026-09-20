@@ -29,7 +29,10 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
-    "deepmerge-ts": "^8.0.0"
+    "deepmerge-ts": "^8.0.0",
+    "mysql2": "^3.23.1",
+    "qs": "^6.16.0",
+    "js-yaml": "^4.3.2"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
