@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun --watch server.ts",
     "start": "bun run server.ts",
-    "build": "bun build server.ts --outdir ./dist",
+    "build": "bun build server.ts --outdir ./dist --target bun",
     "prisma:generate": "bun --bun run prisma generate",
     "prisma:migrate": "bun --bun run prisma migrate dev"
   },

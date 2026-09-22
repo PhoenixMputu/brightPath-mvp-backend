@@ -30,7 +30,7 @@ export class ProvinceService {
    * @param query Query parameters
    * @returns List of provinces and metadata
    */
-  async getAllProvinces(query: ProvinceQuery = {}) {
+  async getAllProvinces(query: Partial<ProvinceQuery> = {}) {
     const { search = '', page = 1, limit = 10, sortBy = 'name', sortOrder = 'asc' } = query;
 
     const cacheKey = `provinces:list:${search}:${page}:${limit}:${sortBy}:${sortOrder}`;
